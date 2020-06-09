@@ -55,7 +55,7 @@ columns = [
 
 app.layout = html.Div([
     dash_table.DataTable(
-        id='table-editing-simple',
+        id='production-areas-editable-table',
         columns=columns,
         data=[{'category': row['category'],
                'capacity_2030': row['capacity_2030'],
@@ -67,15 +67,15 @@ app.layout = html.Div([
               ],
         editable=True
     ),
-    dcc.Graph(id='table-editing-simple-output')
+    dcc.Graph(id='production-areas-bar-chart', config={'editable': True})
 ])
 
 
 @app.callback(
-    Output('table-editing-simple-output', 'figure'),
+    Output('production-areas-bar-chart', 'figure'),
     [
-        Input('table-editing-simple', 'data'),
-        Input('table-editing-simple', 'columns')
+        Input('production-areas-editable-table', 'data'),
+        Input('production-areas-editable-table', 'columns')
     ])
 def display_output(rows, cols):
     df = pd.DataFrame(rows, columns=[c['id'] for c in cols])
