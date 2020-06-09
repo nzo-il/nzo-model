@@ -80,20 +80,25 @@ app.layout = html.Div([
 def display_output(rows, cols):
     df = pd.DataFrame(rows, columns=[c['id'] for c in cols])
     return {
+        'layout': {
+            'title': 'הספק עתידי לפי שטח',
+            'xaxis': {'title': 'הספק, מגה-ווט'},
+            'yaxis': {'title': 'סוג שטח'}
+        },
         'data': [
             {
                 'type': 'bar',
                 'orientation': 'h',
                 'y': df['category'],
                 'x': df['capacity_2030'],
-                'name': 'הספק 2030'
+                'name': '2030'
             },
             {
                 'type': 'bar',
                 'orientation': 'h',
                 'y': df['category'],
                 'x': df['capacity_2050'],
-                'name': 'הספק 2050'
+                'name': '2050'
 
             }
         ]
