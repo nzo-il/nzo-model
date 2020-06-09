@@ -1,3 +1,4 @@
+# code mostly copied from https://developers.google.com/sheets/api/quickstart/python
 from __future__ import print_function
 
 import os.path
