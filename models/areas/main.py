@@ -31,12 +31,14 @@ def fix_values(_raw_values):
         _fixed_values['SUM of SUM of סולארי מותקן עד 2030'].str.replace(',', '').astype(float))
     _fixed_values['percent_utilized_2030'] = (
             _fixed_values['utilized_area_2030'] / _fixed_values['total_area_2030'] * 100)
+    _fixed_values['capacity_2030'] = _fixed_values['סה״כ הספק סולארי 2030']
 
     _fixed_values['total_area_2050'] = _fixed_values['סיכום שטח 2050'].str.replace(',', '').astype(float)
     _fixed_values['utilized_area_2050'] = _fixed_values['סולארי מותקן עד 2050'].str.replace(',', '').astype(
         float)
     _fixed_values['percent_utilized_2050'] = (
             _fixed_values['utilized_area_2050'] / _fixed_values['total_area_2050'] * 100)
+    _fixed_values['capacity_2050'] = _fixed_values['סה״כ הספק סולארי 2050']
 
     return _fixed_values
 
@@ -47,9 +49,8 @@ fixed_values = fix_values(raw_values)
 
 columns = [
     {'id': 'category', 'name': 'Category'},
-    {'id': 'area_2030', 'name': 'Area 2030'},
-    {'id': 'area_2050', 'name': 'Area 2050'},
-    {'id': 'percent_utilized', 'name': '% Utilized'},
+    {'id': 'capacity_2030', 'name': 'Capacity 2030'},
+    {'id': 'capacity_2050', 'name': 'Capacity 2050'},
 ]
 
 app.layout = html.Div([
@@ -57,8 +58,8 @@ app.layout = html.Div([
         id='table-editing-simple',
         columns=columns,
         data=[{'category': row['category'],
-               'area_2030': row['total_area_2030'],
-               'area_2050': row['total_area_2050'],
+               'capacity_2030': row['capacity_2030'],
+               'capacity_2050': row['capacity_2050'],
                # 'percent_utilized': row['percent_utilized_2030']
                }
               for row
@@ -84,13 +85,15 @@ def display_output(rows, cols):
                 'type': 'bar',
                 'orientation': 'h',
                 'y': df['category'],
-                'x': df['area_2030'],
+                'x': df['capacity_2030'],
+                'name': 'הספק 2030'
             },
             {
                 'type': 'bar',
                 'orientation': 'h',
                 'y': df['category'],
-                'x': df['area_2050'],
+                'x': df['capacity_2050'],
+                'name': 'הספק 2050'
 
             }
         ]
