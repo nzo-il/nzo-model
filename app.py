@@ -55,15 +55,14 @@ prices_columns = [
     {'name': '2050 Change (%)', 'id': '2050_change_percantage'},
 ]
 
-areas_raw_values = sheets_api.get_data_for_areas()
-areas_fixed_values = get_areas_fixed_values(areas_raw_values)
-
 areas_columns = [
     {'id': 'category', 'name': 'Category'},
     {'id': 'capacity_2030', 'name': 'Capacity 2030'},
     {'id': 'capacity_2050', 'name': 'Capacity 2050'},
 ]
 
+areas_raw_values = sheets_api.get_data_for_areas()
+areas_fixed_values = get_areas_fixed_values(areas_raw_values)
 
 prices_layout = html.Div([
     dcc.Graph(id='graph'),
@@ -79,7 +78,7 @@ prices_layout = html.Div([
         }
     ),
     dash_table.DataTable(
-        id='data-table',
+        id='prices-editable-data-table',
         columns=prices_columns,
         data=prices_state,
         editable=True,
@@ -141,12 +140,12 @@ def render_areas_graph(rows, cols):
 
 
 @app.callback(
-    Output('data-table', 'selected_rows'),
+    Output('prices-editable-data-table', 'selected_rows'),
     [
-        Input('data-table', 'data'),
+        Input('prices-editable-data-table', 'data'),
     ]
 )
-def initial_rows_selection(rows):
+def prices_initial_rows_selection(rows):
     # By default just select the first row on load
     return [0]
 
@@ -154,11 +153,11 @@ def initial_rows_selection(rows):
 @app.callback(
     Output('table-error-message', 'children'),
     [
-        Input('data-table', 'data'),
-        Input('data-table', 'selected_rows'),
+        Input('prices-editable-data-table', 'data'),
+        Input('prices-editable-data-table', 'selected_rows'),
     ]
 )
-def row_selection_error_message(rows, selected_rows_indices):
+def prices_row_selection_error_message(rows, selected_rows_indices):
     if selected_rows_indices:
         rows = [rows[index] for index in selected_rows_indices]
         if get_unit_or_false(rows):
@@ -170,8 +169,8 @@ def row_selection_error_message(rows, selected_rows_indices):
 @app.callback(
     Output('graph', 'figure'),
     [
-        Input('data-table', 'data'),
-        Input('data-table', 'selected_rows'),
+        Input('prices-editable-data-table', 'data'),
+        Input('prices-editable-data-table', 'selected_rows'),
     ]
 )
 def render_prices_graph(rows, selected_rows_indices):
