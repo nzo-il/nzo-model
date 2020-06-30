@@ -132,6 +132,6 @@ dmypy.json
 # Pipfile
 Pipfile.lock
 
-# local run files
-sources/credentials.json
+# Google OAuth
+credentials.json
 token.pickle
