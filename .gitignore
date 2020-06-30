@@ -131,3 +131,7 @@ dmypy.json
 
 # Pipfile
 Pipfile.lock
+
+# local run files
+sources/credentials.json
+token.pickle
