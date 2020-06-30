@@ -41,7 +41,7 @@ def get_unit_or_false(rows):
     return list(units)[0]
 
 
-def fix_values(_raw_values):
+def get_areas_fixed_values(_raw_values):
     # headers = [
     #     'קטגוריה',
     #     'SUM of SUM of סולארי מותקן עד 2030', 'SUM of SUM of שטח פנוי נותר ב-2030', 'סיכום שטח 2030',
@@ -52,20 +52,22 @@ def fix_values(_raw_values):
     #              'אזורי תעשיה',
     #              'אגריוולטאי']
 
-    _fixed_values = pd.DataFrame(_raw_values[1:], columns=_raw_values[0])
-    _fixed_values['category'] = _fixed_values['קטגוריה']
-    _fixed_values['total_area_2030'] = (_fixed_values['סיכום שטח 2030'].str.replace(',', '').astype(float))
-    _fixed_values['utilized_area_2030'] = (
-        _fixed_values['SUM of SUM of סולארי מותקן עד 2030'].str.replace(',', '').astype(float))
-    _fixed_values['percent_utilized_2030'] = (
-            _fixed_values['utilized_area_2030'] / _fixed_values['total_area_2030'] * 100)
-    _fixed_values['capacity_2030'] = _fixed_values['סה״כ הספק סולארי 2030']
+    fixed_values = pd.DataFrame(_raw_values[1:], columns=_raw_values[0])
+    fixed_values['category'] = fixed_values['קטגוריה']
+    fixed_values['total_area_2030'] = (
+        fixed_values['סיכום שטח 2030'].str.replace(',', '').astype(float))
+    fixed_values['utilized_area_2030'] = (
+        fixed_values['SUM of SUM of סולארי מותקן עד 2030'].str.replace(',', '').astype(float))
+    fixed_values['percent_utilized_2030'] = (
+        fixed_values['utilized_area_2030'] / fixed_values['total_area_2030'] * 100)
+    fixed_values['capacity_2030'] = fixed_values['סה״כ הספק סולארי 2030']
 
-    _fixed_values['total_area_2050'] = _fixed_values['סיכום שטח 2050'].str.replace(',', '').astype(float)
-    _fixed_values['utilized_area_2050'] = _fixed_values['סולארי מותקן עד 2050'].str.replace(',', '').astype(
+    fixed_values['total_area_2050'] = fixed_values['סיכום שטח 2050'].str.replace(
+        ',', '').astype(float)
+    fixed_values['utilized_area_2050'] = fixed_values['סולארי מותקן עד 2050'].str.replace(',', '').astype(
         float)
-    _fixed_values['percent_utilized_2050'] = (
-            _fixed_values['utilized_area_2050'] / _fixed_values['total_area_2050'] * 100)
-    _fixed_values['capacity_2050'] = _fixed_values['סה״כ הספק סולארי 2050']
+    fixed_values['percent_utilized_2050'] = (
+        fixed_values['utilized_area_2050'] / fixed_values['total_area_2050'] * 100)
+    fixed_values['capacity_2050'] = fixed_values['סה״כ הספק סולארי 2050']
 
-    return _fixed_values
+    return fixed_values

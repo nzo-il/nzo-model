@@ -6,7 +6,7 @@ from dash.dependencies import Input, Output
 import dash_table
 
 from sources import sheets_api
-from utils import values_by_change_from_initial, interpolate, get_unit_or_false, fix_values
+from utils import values_by_change_from_initial, interpolate, get_unit_or_false, get_areas_fixed_values
 from settings import app
 
 
@@ -56,7 +56,7 @@ prices_columns = [
 ]
 
 areas_raw_values = sheets_api.get_data_for_areas()
-areas_fixed_values = fix_values(areas_raw_values)
+areas_fixed_values = get_areas_fixed_values(areas_raw_values)
 
 areas_columns = [
     {'id': 'category', 'name': 'Category'},
@@ -177,8 +177,8 @@ def row_selection_error_message(rows, selected_rows_indices):
 def render_prices_graph(rows, selected_rows_indices):
     data = []
     layout = {
-        'xaxis': { 'title': 'Year', 'type': 'log' },
-        'yaxis': { 'title': 'Price' },
+        'xaxis': {'title': 'Year', 'type': 'log'},
+        'yaxis': {'title': 'Price'},
     }
 
     if selected_rows_indices:
