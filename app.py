@@ -6,42 +6,42 @@ from dash.dependencies import Input, Output
 import dash_table
 
 from sources import sheets_api
-from utils import values_by_change_from_initial, interpolate, get_unit_or_false, get_areas_fixed_values
+from utils import values_by_change_from_initial, interpolate, get_unit_or_false, remap_areas_data, remap_prices_data
 from settings import app
 
 
-prices_state = [
-    {
-        'category': 'Coal',
-        'sub_category': 'CAPEX',
-        'source': 'Breyer',
-        'unit': 'ILS/kw',
-        '2020_price': 5856,
-        '2030_change_percantage': -45,
-        '2040_change_percantage': -55,
-        '2050_change_percantage': -60,
-    },
-    {
-        'category': 'CCGT',
-        'sub_category': 'CAPEX',
-        'source': 'Breyer',
-        'unit': 'ILS/kw',
-        '2020_price': 3025.9,
-        '2030_change_percantage': -45,
-        '2040_change_percantage': -55,
-        '2050_change_percantage': -60,
-    },
-    {
-        'category': 'Coal',
-        'sub_category': 'OPEX-var',
-        'source': 'Breyer',
-        'unit': 'ILS/kwh',
-        '2020_price': 15000,
-        '2030_change_percantage': -45,
-        '2040_change_percantage': -55,
-        '2050_change_percantage': -60,
-    }
-]
+# prices_demo_state = [
+#     {
+#         'category': 'Coal',
+#         'sub_category': 'CAPEX',
+#         'source': 'Breyer',
+#         'unit': 'ILS/kw',
+#         '2020_price': 5856,
+#         '2030_change_percantage': -45,
+#         '2040_change_percantage': -55,
+#         '2050_change_percantage': -60,
+#     },
+#     {
+#         'category': 'CCGT',
+#         'sub_category': 'CAPEX',
+#         'source': 'Breyer',
+#         'unit': 'ILS/kw',
+#         '2020_price': 3025.9,
+#         '2030_change_percantage': -45,
+#         '2040_change_percantage': -55,
+#         '2050_change_percantage': -60,
+#     },
+#     {
+#         'category': 'Coal',
+#         'sub_category': 'OPEX-var',
+#         'source': 'Breyer',
+#         'unit': 'ILS/kwh',
+#         '2020_price': 15000,
+#         '2030_change_percantage': -45,
+#         '2040_change_percantage': -55,
+#         '2050_change_percantage': -60,
+#     }
+# ]
 
 
 prices_columns = [
@@ -53,7 +53,10 @@ prices_columns = [
     {'name': '2030 Change (%)', 'id': '2030_change_percantage'},
     {'name': '2040 Change (%)', 'id': '2040_change_percantage'},
     {'name': '2050 Change (%)', 'id': '2050_change_percantage'},
+    {'name': 'show', 'id': 'show', 'show': False},
+    {'name': 'editable', 'id': 'editable', 'hideable': 'last'},
 ]
+
 
 areas_columns = [
     {'id': 'category', 'name': 'Category'},
@@ -61,8 +64,10 @@ areas_columns = [
     {'id': 'capacity_2050', 'name': 'Capacity 2050'},
 ]
 
-areas_raw_values = sheets_api.get_data_for_areas()
-areas_fixed_values = get_areas_fixed_values(areas_raw_values)
+
+areas_data = remap_areas_data(sheets_api.get_data_for_areas())
+prices_data = remap_prices_data(sheets_api.get_data_for_prices())
+
 
 prices_layout = html.Div([
     dcc.Graph(id='graph'),
@@ -80,7 +85,7 @@ prices_layout = html.Div([
     dash_table.DataTable(
         id='prices-editable-data-table',
         columns=prices_columns,
-        data=prices_state,
+        data=prices_data,
         editable=True,
         row_selectable='multi',
     ),
@@ -91,14 +96,7 @@ areas_layout = html.Div([
     dash_table.DataTable(
         id='production-areas-editable-table',
         columns=areas_columns,
-        data=[{'category': row['category'],
-               'capacity_2030': row['capacity_2030'],
-               'capacity_2050': row['capacity_2050'],
-               # 'percent_utilized': row['percent_utilized_2030']
-               }
-              for row
-              in areas_fixed_values.to_dict(orient='records')
-              ],
+        data=areas_data,
         editable=True
     ),
     dcc.Graph(id='production-areas-bar-chart', config={'editable': True})
@@ -229,4 +227,7 @@ def router(pathname):
 server = app.server
 
 if __name__ == '__main__':
-    app.run_server(debug=True, dev_tools_hot_reload=True)
+    app.run_server(
+        # debug=True,
+        # dev_tools_hot_reload=True,
+    )

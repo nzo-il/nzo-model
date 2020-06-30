@@ -1,8 +1,15 @@
 # NZO Model
 
-## Current TODOs:
-- [ ] Connect prices graphs to real data (Google Sheet)
+## TODO (Prices):
+- [X] Connect prices graphs to Google Sheet
+- [ ] Un-editable specific rows
+- [ ] Columns filtering and/or group-by
 - [ ] Fix `interpolate` function, or use the pandas one
+- [ ] Hide "show" and "editable" columns in UI (but keep them for logic)
+- [ ] Handle special case of percentage instead of number
+- [ ] Nice to have: Show in some way the dependencies of the LCOE line (where it gets calculated from)
+
+## TODO (General):
 - [ ] Change the design of the input fields
 - [ ] Tooltips in Hebrew on each column header
 

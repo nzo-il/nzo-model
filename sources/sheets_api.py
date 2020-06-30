@@ -15,11 +15,15 @@ SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
 # The ID and range of a sample spreadsheet.
 SAMPLE_SPREADSHEET_ID = '1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms'
 AREAS_SUMMARY_RANGE = 'Areas!A111:K120'
-PRICES_SUMMARY_RANGE = 'prices_table_for_graph!A3:L25'
+PRICES_SUMMARY_RANGE = 'prices_table_for_webapp!A3:M25'
 
 
 def get_data_for_areas():
     return get_values(range_name=AREAS_SUMMARY_RANGE)
+
+
+def get_data_for_prices():
+    return get_values(range_name=PRICES_SUMMARY_RANGE)
 
 
 def get_values(range_name):
