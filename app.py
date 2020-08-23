@@ -1,3 +1,4 @@
+from typing import Dict, List
 import dash
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
@@ -9,6 +10,8 @@ from dash.dependencies import (
     Output,
 )
 
+from sources import sheets_api
+from utils import values_by_change_from_initial, interpolate, get_unit_or_false, remap_areas_data, remap_prices_data
 from power_by_category import get_power_layout
 from settings import app
 from sources import sheets_api
@@ -21,55 +24,96 @@ from utils import (
 from power_by_day import get_power_by_day_layout
 
 
-prices_state = [
-    {
-        'category': 'Coal',
-        'sub_category': 'CAPEX',
-        'source': 'Breyer',
-        'unit': 'ILS/kw',
-        '2020_price': 5856,
-        '2030_change_percantage': -45,
-        '2040_change_percantage': -55,
-        '2050_change_percantage': -60,
-    },
-    {
-        'category': 'CCGT',
-        'sub_category': 'CAPEX',
-        'source': 'Breyer',
-        'unit': 'ILS/kw',
-        '2020_price': 3025.9,
-        '2030_change_percantage': -45,
-        '2040_change_percantage': -55,
-        '2050_change_percantage': -60,
-    },
-    {
-        'category': 'Coal',
-        'sub_category': 'OPEX-var',
-        'source': 'Breyer',
-        'unit': 'ILS/kwh',
-        '2020_price': 15000,
-        '2030_change_percantage': -45,
-        '2040_change_percantage': -55,
-        '2050_change_percantage': -60,
-    }
-]
+# prices_demo_state = [
+#     {
+#         'category': 'Coal',
+#         'sub_category': 'CAPEX',
+#         'source': 'Breyer',
+#         'unit': 'ILS/kw',
+#         '2020_price': 5856,
+#         '2030_change_percantage': -45,
+#         '2040_change_percantage': -55,
+#         '2050_change_percantage': -60,
+#     },
+#     {
+#         'category': 'CCGT',
+#         'sub_category': 'CAPEX',
+#         'source': 'Breyer',
+#         'unit': 'ILS/kw',
+#         '2020_price': 3025.9,
+#         '2030_change_percantage': -45,
+#         '2040_change_percantage': -55,
+#         '2050_change_percantage': -60,
+#     },
+#     {
+#         'category': 'Coal',
+#         'sub_category': 'OPEX-var',
+#         'source': 'Breyer',
+#         'unit': 'ILS/kwh',
+#         '2020_price': 15000,
+#         '2030_change_percantage': -45,
+#         '2040_change_percantage': -55,
+#         '2050_change_percantage': -60,
+#     }
+# ]
 
 prices_columns = [
     {'name': 'Category', 'id': 'category', 'editable': False},
     {'name': 'Sub Category', 'id': 'sub_category', 'editable': False},
     {'name': 'Source', 'id': 'source', 'editable': False},
     {'name': 'Unit', 'id': 'unit', 'editable': False},
-    {'name': '2020 Price', 'id': '2020_price'},
-    {'name': '2030 Change (%)', 'id': '2030_change_percantage'},
-    {'name': '2040 Change (%)', 'id': '2040_change_percantage'},
-    {'name': '2050 Change (%)', 'id': '2050_change_percantage'},
+    {'name': '2020 Price', 'id': '2020_price', 'editable': True},
+    {'name': '2030 Change (%)', 'id': '2030_change_percantage', 'editable': True},
+    {'name': '2040 Change (%)', 'id': '2040_change_percantage', 'editable': True},
+    {'name': '2050 Change (%)', 'id': '2050_change_percantage', 'editable': True},
+    {'name': 'show', 'id': 'show', 'editable': False},
+    {'name': 'editable', 'id': 'editable', 'editable': False},
 ]
+
 
 areas_columns = [
     {'id': 'category', 'name': 'Category'},
     {'id': 'capacity_2030', 'name': 'Capacity 2030'},
     {'id': 'capacity_2050', 'name': 'Capacity 2050'},
 ]
+
+
+def get_cell_css_selector(columns: List[Dict], column_id: str):
+    for index, column in enumerate(columns):
+        if column['id'] == column_id:
+            return f'td.dash-cell.column-{index}'
+    raise Exception(f'Could not find column with id "{column_id}"')
+
+
+def prices_editable_cells_css():
+    global prices_columns
+
+    css = []
+    for column in prices_columns:
+        if column['editable'] is True:
+            css.append({
+                'selector': get_cell_css_selector(columns=prices_columns, column_id=column['id']),
+                'rule': 'background-color: #fff7f7',
+            })
+            css.append({
+                'selector': get_cell_css_selector(columns=prices_columns, column_id=column['id']) + ':hover',
+                'rule': 'cursor: pointer; outline: 1px solid hotpink;',
+            })
+
+    return css
+
+
+areas_data = remap_areas_data(sheets_api.get_data_for_areas())
+prices_data = remap_prices_data(sheets_api.get_data_for_prices())
+
+
+style_cell_conditional = [
+    {
+        'if': {'column_id': c},
+        'textAlign': 'left'
+    } for c in ['category', 'sub_category', 'source', 'unit']
+]
+
 
 prices_layout = html.Div([
     dcc.Graph(id='graph'),
@@ -85,23 +129,49 @@ prices_layout = html.Div([
         }
     ),
     dash_table.DataTable(
-        id='data-table',
+        id='prices-editable-data-table',
         columns=prices_columns,
-        data=prices_state,
+        data=prices_data,
         editable=True,
+        sort_action="native",
+        sort_mode="multi",
         row_selectable='multi',
+        hidden_columns=['show', 'editable'],
+        style_cell_conditional=style_cell_conditional,
+        style_as_list_view=True,
+        css=[
+            {
+                'selector': '.show-hide',
+                'rule': 'display: none'
+            },
+        ] + prices_editable_cells_css()
     ),
 ])
 
 
-@app.callback(Output('tab-content', 'children'), [Input("tabs", 'active_tab')])
-def tab_content(active_tab):
-    if active_tab == '2030':
-        return html.Img(src='https://picsum.photos/id/100/200/300?grayscale')
-    elif active_tab == '2050':
-        return html.Img(src='https://picsum.photos/id/200/200/300?grayscale')
-    else:
-        return html.H3('Tab not found')
+# areas_layout = html.Div([
+#     dash_table.DataTable(
+#         id='production-areas-editable-table',
+#         columns=areas_columns,
+#         data=areas_data,
+#         editable=True
+#     ),
+#     dbc.Row(
+#         dbc.Col(
+#             dbc.Container(
+#                 dbc.Col(html.Div(id="tab-content"), width={"size": 6, "offset": 3}, )),
+#             className='bg-light'
+#         ),
+#         id='graph-content'
+#     ),
+#     dbc.Row([
+#         dbc.Col(html.Span(''), width=9),
+#         dbc.Col(dcc.Link([html.I(className='fa fa-download'), ' Export to PDF'], href='#'), width=2),
+#     ], id='footer', className='bg-white', justify='end')
+# ], id='tab-body',
+#     fluid=True,
+#     className='bg-light p-0',
+# )
 
 
 areas_styled_dummy_layout = dbc.Container([
@@ -175,6 +245,16 @@ def get_areas_layout():
     ])
 
 
+@app.callback(Output('tab-content', 'children'), [Input("tabs", 'active_tab')])
+def tab_content(active_tab):
+    if active_tab == '2030':
+        return html.Img(src='https://picsum.photos/id/100/200/300?grayscale')
+    elif active_tab == '2050':
+        return html.Img(src='https://picsum.photos/id/200/200/300?grayscale')
+    else:
+        return html.H3('Tab not found')
+
+
 @app.callback(
     Output('production-areas-bar-chart', 'figure'),
     [
@@ -210,24 +290,28 @@ def render_areas_graph(rows, cols):
 
 
 @app.callback(
-    Output('data-table', 'selected_rows'),
+    Output('prices-editable-data-table', 'selected_rows'),
     [
-        Input('data-table', 'data'),
+        Input('prices-editable-data-table', 'data'),
     ]
 )
-def initial_rows_selection(rows):
-    # By default just select the first row on load
-    return [0]
+def prices_default_rows_selection(rows):
+    default_indices = []
+    for index, row in enumerate(rows):
+        if row['category'].lower() == 'ccgt' or row['category'].lower() == 'solar-residential':
+            if row['sub_category'].lower() == 'capex':
+                default_indices.append(index)
+    return default_indices
 
 
 @app.callback(
     Output('table-error-message', 'children'),
     [
-        Input('data-table', 'data'),
-        Input('data-table', 'selected_rows'),
+        Input('prices-editable-data-table', 'data'),
+        Input('prices-editable-data-table', 'selected_rows'),
     ]
 )
-def row_selection_error_message(rows, selected_rows_indices):
+def prices_row_selection_error_message(rows, selected_rows_indices):
     if selected_rows_indices:
         rows = [rows[index] for index in selected_rows_indices]
         if get_unit_or_false(rows):
@@ -239,8 +323,8 @@ def row_selection_error_message(rows, selected_rows_indices):
 @app.callback(
     Output('graph', 'figure'),
     [
-        Input('data-table', 'data'),
-        Input('data-table', 'selected_rows'),
+        Input('prices-editable-data-table', 'data'),
+        Input('prices-editable-data-table', 'selected_rows'),
     ]
 )
 def render_prices_graph(rows, selected_rows_indices):
@@ -261,12 +345,15 @@ def render_prices_graph(rows, selected_rows_indices):
                     (2040, row['2040_change_percantage']),
                     (2050, row['2050_change_percantage']),
                 ]
-                year_to_ils_per_kw_vectors = values_by_change_from_initial(
+
+                clean_value = float(row['2020_price'].replace('%', ''))
+
+                values = values_by_change_from_initial(
                     2020,
-                    row['2020_price'],
+                    clean_value,
                     change_by_year
                 )
-                x, y = interpolate(year_to_ils_per_kw_vectors)
+                x, y = interpolate(values)
                 line = {
                     'type': 'line',
                     'name': f'{row["sub_category"]} by {row["source"]}',
@@ -305,4 +392,7 @@ def router(pathname):
 server = app.server
 
 if __name__ == '__main__':
-    app.run_server(debug=True, dev_tools_hot_reload=True)
+    app.run_server(
+        # debug=True,
+        # dev_tools_hot_reload=True,
+    )

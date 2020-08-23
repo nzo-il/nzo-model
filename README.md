@@ -1,8 +1,19 @@
 # NZO Model
 
-## Current TODOs:
-- [ ] Connect prices graphs to real data (Google Sheet)
+## TODO (Prices):
+- [X] Connect prices graphs to Google Sheet
+- [X] Better UI indication on editable cells
+- [ ] One of the external_stylesheets in `settings.py` causes datatable to get out of page bounds
+- [X] Columns sorting
+- [ ] Columns Excel-like filtering
 - [ ] Fix `interpolate` function, or use the pandas one
+- [X] Hide "show" and "editable" columns in UI (but keep them for logic)
+- [X] By default, select CAPEX rows in categories "CCGT" and "Solar-residential"
+- [X] Handle special case of percentage instead of number
+- [ ] Make specific rows un-editable
+- [ ] Nice to have: Show in some way the dependencies of the LCOE line (where it gets calculated from)
+
+## TODO (General):
 - [ ] Change the design of the input fields
 - [ ] Tooltips in Hebrew on each column header
 
