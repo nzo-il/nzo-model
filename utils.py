@@ -35,7 +35,9 @@ def interpolate(vectors):
 
 
 def get_unit_or_false(rows):
-    units = set([row['unit'] for row in rows])
+    # Get the unit (string) for the selected rows, and return False if there are multiple units selected.
+    # We can't do anything with multiple units.
+    units = set([row['unit'].lower() for row in rows])
     if len(units) > 1:
         return False
     return list(units)[0]

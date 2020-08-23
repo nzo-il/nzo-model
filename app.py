@@ -53,8 +53,8 @@ prices_columns = [
     {'name': '2030 Change (%)', 'id': '2030_change_percantage'},
     {'name': '2040 Change (%)', 'id': '2040_change_percantage'},
     {'name': '2050 Change (%)', 'id': '2050_change_percantage'},
-    {'name': 'show', 'id': 'show', 'show': False},
-    {'name': 'editable', 'id': 'editable', 'hideable': 'last'},
+    {'name': 'show', 'id': 'show'},
+    {'name': 'editable', 'id': 'editable'},
 ]
 
 
@@ -67,6 +67,18 @@ areas_columns = [
 
 areas_data = remap_areas_data(sheets_api.get_data_for_areas())
 prices_data = remap_prices_data(sheets_api.get_data_for_prices())
+
+
+style_cell_conditional = [
+    {
+        'if': {'column_id': c},
+        'textAlign': 'left'
+    } for c in ['category', 'sub_category', 'source', 'unit']
+]
+style_cell_conditional.append({
+    'if': {'column_editable': True},
+    'background_color': 'lightgray'
+})
 
 
 prices_layout = html.Div([
@@ -88,6 +100,19 @@ prices_layout = html.Div([
         data=prices_data,
         editable=True,
         row_selectable='multi',
+        hidden_columns=['show', 'editable'],
+        style_cell_conditional=style_cell_conditional,
+        style_as_list_view=True,
+        css=[
+            {
+                "selector": ".show-hide",
+                "rule": "display: none"
+            },
+            # {
+            #     "selector": ".input-active.focused.dash-cell-value",
+            #     "rule": "background-color: white"
+            # }
+        ]
     ),
 ])
 
@@ -143,9 +168,13 @@ def render_areas_graph(rows, cols):
         Input('prices-editable-data-table', 'data'),
     ]
 )
-def prices_initial_rows_selection(rows):
-    # By default just select the first row on load
-    return [0]
+def prices_default_rows_selection(rows):
+    default_indices = []
+    for index, row in enumerate(rows):
+        if row['category'].lower() == 'ccgt' or row['category'].lower() == 'solar-residential':
+            if row['sub_category'].lower() == 'capex':
+                default_indices.append(index)
+    return default_indices
 
 
 @app.callback(
@@ -189,12 +218,15 @@ def render_prices_graph(rows, selected_rows_indices):
                     (2040, row['2040_change_percantage']),
                     (2050, row['2050_change_percantage']),
                 ]
-                year_to_ils_per_kw_vectors = values_by_change_from_initial(
+
+                clean_value = float(row['2020_price'].replace('%', ''))
+
+                values = values_by_change_from_initial(
                     2020,
-                    row['2020_price'],
+                    clean_value,
                     change_by_year
                 )
-                x, y = interpolate(year_to_ils_per_kw_vectors)
+                x, y = interpolate(values)
                 line = {
                     'type': 'line',
                     'name': f'{row["sub_category"]} by {row["source"]}',
