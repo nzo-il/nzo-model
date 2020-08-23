@@ -1,7 +1,12 @@
 import dash_core_components as dcc
 import dash_html_components as html
 import plotly.graph_objects as go
+from dash.exceptions import PreventUpdate
+
 from components.stacked_power_graph import get_plotly_stacked_power_figures
+from settings import app
+import dash
+import json
 
 POWER_COLUMNS = [
     {'name': 'Station Name', 'id': 'station_name'},
@@ -64,6 +69,13 @@ POWER_DATA = [
 ]
 
 YEARS = [year for year in range(2020, 2051)]
+
+EXTRA_LINE = {
+    'name': 'extra-line',
+    'data': {year: (year-2020)*10 for year in YEARS},
+    'color': 'red',
+}
+
 CATEGORY_COLORS = {
     "Coal": 'black',
     "Solar": 'yellow',
@@ -84,6 +96,7 @@ def get_power_source_data(item):
             value = item["annual_output"]
         elif start_year < year <= close_year:
             value = values[YEARS[index]] * (1 - item.get("yearly_degradation", 0))
+
         values[year] = value
 
     return {
@@ -92,19 +105,32 @@ def get_power_source_data(item):
         'data': values
     }
 
+@app.callback(
+    dash.dependencies.Output('redirect-hidden-div', 'children'),
+    [dash.dependencies.Input('g1', 'clickData')]
+)
+def point_clicked(clickData):
+    if clickData is not None:
+        return dcc.Location(pathname='/power_by_day5', id='whatever')
 
-def get_power_layout():
+    raise PreventUpdate()
+
+
+def get_power_by_day_layout():
     fig = go.Figure()
+    fig.layout.hovermode = 'x'
 
     power_sources = []
     for item in POWER_DATA:
         power_sources.append(get_power_source_data(item))
 
-    traces = get_plotly_stacked_power_figures(YEARS, power_sources)
+    traces = get_plotly_stacked_power_figures(YEARS, power_sources, EXTRA_LINE)
 
     for t in traces:
         fig.add_trace(t)
 
     return html.Div([
-        dcc.Graph(figure=fig),
+        dcc.Graph(id='g1', figure=fig),
+        "gi",
+        html.Div(id='redirect-hidden-div'),
     ])

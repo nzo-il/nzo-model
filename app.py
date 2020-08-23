@@ -18,6 +18,8 @@ from utils import (
     interpolate,
     values_by_change_from_initial,
 )
+from power_by_day import get_power_by_day_layout
+
 
 prices_state = [
     {
@@ -294,6 +296,8 @@ def router(pathname):
     elif pathname == '/layout':
         # according to design: https://3judob.axshare.com/#id=qtqu20&p=2030_graph&g=1
         return areas_styled_dummy_layout
+    elif pathname == '/power_by_day':
+        return get_power_by_day_layout()
     else:
         return prices_layout
 
