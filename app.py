@@ -8,6 +8,7 @@ import dash_table
 from sources import sheets_api
 from utils import values_by_change_from_initial, interpolate, get_unit_or_false, fix_values
 from settings import app
+from power_by_category import get_power_layout
 
 
 prices_state = [
@@ -55,9 +56,6 @@ prices_columns = [
     {'name': '2050 Change (%)', 'id': '2050_change_percantage'},
 ]
 
-areas_raw_values = sheets_api.get_data_for_areas()
-areas_fixed_values = fix_values(areas_raw_values)
-
 areas_columns = [
     {'id': 'category', 'name': 'Category'},
     {'id': 'capacity_2030', 'name': 'Capacity 2030'},
@@ -88,22 +86,25 @@ prices_layout = html.Div([
 ])
 
 
-areas_layout = html.Div([
-    dash_table.DataTable(
-        id='production-areas-editable-table',
-        columns=areas_columns,
-        data=[{'category': row['category'],
-               'capacity_2030': row['capacity_2030'],
-               'capacity_2050': row['capacity_2050'],
-               # 'percent_utilized': row['percent_utilized_2030']
-               }
-              for row
-              in areas_fixed_values.to_dict(orient='records')
-              ],
-        editable=True
-    ),
-    dcc.Graph(id='production-areas-bar-chart', config={'editable': True})
-])
+def get_areas_layout():
+    areas_raw_values = sheets_api.get_data_for_areas()
+    areas_fixed_values = fix_values(areas_raw_values)
+    return html.Div([
+        dash_table.DataTable(
+            id='production-areas-editable-table',
+            columns=areas_columns,
+            data=[{'category': row['category'],
+                   'capacity_2030': row['capacity_2030'],
+                   'capacity_2050': row['capacity_2050'],
+                   # 'percent_utilized': row['percent_utilized_2030']
+                   }
+                  for row
+                  in areas_fixed_values.to_dict(orient='records')
+                  ],
+            editable=True
+        ),
+        dcc.Graph(id='production-areas-bar-chart', config={'editable': True})
+    ])
 
 
 @app.callback(
@@ -205,7 +206,6 @@ def render_prices_graph(rows, selected_rows_indices):
                     'y': y,
                 }
                 data.append(line)
-
     return {
         'data': data,
         'layout': layout,
@@ -222,7 +222,9 @@ def router(pathname):
     if pathname == '/prices':
         return prices_layout
     elif pathname == '/areas':
-        return areas_layout
+        return get_areas_layout()
+    elif pathname == '/power':
+        return get_power_layout()
     else:
         return prices_layout
 
