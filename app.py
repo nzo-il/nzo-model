@@ -1,4 +1,5 @@
 import dash
+import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_table
@@ -51,7 +52,6 @@ prices_state = [
     }
 ]
 
-
 prices_columns = [
     {'name': 'Category', 'id': 'category', 'editable': False},
     {'name': 'Sub Category', 'id': 'sub_category', 'editable': False},
@@ -92,9 +92,69 @@ prices_layout = html.Div([
 ])
 
 
+@app.callback(Output('tab-content', 'children'), [Input("tabs", 'active_tab')])
+def tab_content(active_tab):
+    if active_tab == '2030':
+        return html.Img(src='https://picsum.photos/id/100/200/300?grayscale')
+    elif active_tab == '2050':
+        return html.Img(src='https://picsum.photos/id/200/200/300?grayscale')
+    else:
+        return html.H3('Tab not found')
+
+
+areas_styled_dummy_layout = dbc.Container([
+    dbc.Row(
+        dbc.Col(
+            dbc.Container(
+                [
+                    dbc.Col(html.H3('NZO2050'), width=12, className='bg-dark'),
+                    dbc.Col(html.H5('Lorem ipsum dolor sit amet, consectetur adipiscing'), width=12,
+                            className='bg-dark'),
+                    dbc.Col(html.P(
+                        'Lorem ipsum dolor sit amet, consectetur adipiscing elit. '
+                        'Aenean euismod bibendum laoreet. Proin gravida dolor sit amet '
+                        'lacus accumsan et viverra justo commodo. '
+                    ), width=12)
+                ], id='headers-container'
+            ),
+        ), className='text-primary bg-dark p-5', id='headers'),
+    dbc.Row(
+        dbc.Col(
+            dbc.Container(
+                dbc.Col(
+                    dbc.Tabs(
+                        [
+                            dbc.Tab(label='2030', tab_id='2030'),
+                            dbc.Tab(label='2050', tab_id='2050'),
+                        ],
+                        id='tabs'
+                    ),
+                    width=True,
+                )
+            ), className='bg-dark px-5'), id='graph-tabs'
+    ),
+    dbc.Row(
+        dbc.Col(
+            dbc.Container(
+                dbc.Col(html.Div(id="tab-content"), width={"size": 6, "offset": 3}, )),
+            className='bg-light'
+        ),
+        id='graph-content'
+    ),
+    dbc.Row([
+        dbc.Col(html.Span(''), width=9),
+        dbc.Col(dcc.Link([html.I(className='fa fa-download'), ' Export to PDF'], href='#'), width=2),
+    ], id='footer', className='bg-white', justify='end')
+], id='tab-body',
+    fluid=True,
+    className='bg-light p-0',
+)
+
+
 def get_areas_layout():
     areas_raw_values = sheets_api.get_data_for_areas()
     areas_fixed_values = fix_values(areas_raw_values)
+    # todo: consider rewrite using: https://dash-bootstrap-components.opensource.faculty.ai/docs/components/table/
     return html.Div([
         dash_table.DataTable(
             id='production-areas-editable-table',
@@ -231,6 +291,9 @@ def router(pathname):
         return get_areas_layout()
     elif pathname == '/power':
         return get_power_layout()
+    elif pathname == '/layout':
+        # according to design: https://3judob.axshare.com/#id=qtqu20&p=2030_graph&g=1
+        return areas_styled_dummy_layout
     else:
         return prices_layout
 
