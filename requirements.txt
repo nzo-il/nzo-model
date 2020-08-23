@@ -1,7 +1,8 @@
-dash==1.12.0
-pandas
-google-api-python-client
-google-auth-httplib2
-google-auth-oauthlib
-requests
-gunicorn
+dash==1.14.0
+dash-bootstrap-components==0.10.5
+google-api-python-client==1.10.0
+google-auth-httplib2==0.0.4
+google-auth-oauthlib==0.4.1
+gunicorn==20.0.4
+pandas==1.1.1
+requests==2.24.0
