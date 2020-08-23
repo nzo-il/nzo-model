@@ -9,6 +9,7 @@ from sources import sheets_api
 from utils import values_by_change_from_initial, interpolate, get_unit_or_false, fix_values
 from settings import app
 from power_by_category import get_power_layout
+from power_by_day import get_power_by_day_layout
 
 
 prices_state = [
@@ -225,6 +226,8 @@ def router(pathname):
         return get_areas_layout()
     elif pathname == '/power':
         return get_power_layout()
+    elif pathname == '/power_by_day':
+        return get_power_by_day_layout()
     else:
         return prices_layout
 
