@@ -1,15 +1,22 @@
-import pandas as pd
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
-from dash.dependencies import Input, Output
 import dash_table
+import pandas as pd
+from dash.dependencies import (
+    Input,
+    Output,
+)
 
-from sources import sheets_api
-from utils import values_by_change_from_initial, interpolate, get_unit_or_false, fix_values
-from settings import app
 from power_by_category import get_power_layout
-
+from settings import app
+from sources import sheets_api
+from utils import (
+    fix_values,
+    get_unit_or_false,
+    interpolate,
+    values_by_change_from_initial,
+)
 
 prices_state = [
     {
@@ -61,7 +68,6 @@ areas_columns = [
     {'id': 'capacity_2030', 'name': 'Capacity 2030'},
     {'id': 'capacity_2050', 'name': 'Capacity 2050'},
 ]
-
 
 prices_layout = html.Div([
     dcc.Graph(id='graph'),
@@ -178,8 +184,8 @@ def row_selection_error_message(rows, selected_rows_indices):
 def render_prices_graph(rows, selected_rows_indices):
     data = []
     layout = {
-        'xaxis': { 'title': 'Year', 'type': 'log' },
-        'yaxis': { 'title': 'Price' },
+        'xaxis': {'title': 'Year', 'type': 'log'},
+        'yaxis': {'title': 'Price'},
     }
 
     if selected_rows_indices:
