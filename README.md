@@ -2,7 +2,10 @@
 
 ## TODO (Prices):
 - [X] Connect prices graphs to Google Sheet
-- [ ] Columns filtering and/or group-by
+- [X] Better UI indication on editable cells
+- [ ] One of the external_stylesheets in `settings.py` causes datatable to get out of page bounds
+- [X] Columns sorting
+- [ ] Columns Excel-like filtering
 - [ ] Fix `interpolate` function, or use the pandas one
 - [X] Hide "show" and "editable" columns in UI (but keep them for logic)
 - [X] By default, select CAPEX rows in categories "CCGT" and "Solar-residential"

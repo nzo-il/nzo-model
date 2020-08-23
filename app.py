@@ -1,3 +1,4 @@
+from typing import Dict, List
 import dash
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
@@ -61,19 +62,45 @@ prices_columns = [
     {'name': 'Sub Category', 'id': 'sub_category', 'editable': False},
     {'name': 'Source', 'id': 'source', 'editable': False},
     {'name': 'Unit', 'id': 'unit', 'editable': False},
-    {'name': '2020 Price', 'id': '2020_price'},
-    {'name': '2030 Change (%)', 'id': '2030_change_percantage'},
-    {'name': '2040 Change (%)', 'id': '2040_change_percantage'},
-    {'name': '2050 Change (%)', 'id': '2050_change_percantage'},
-    {'name': 'show', 'id': 'show'},
-    {'name': 'editable', 'id': 'editable'},
+    {'name': '2020 Price', 'id': '2020_price', 'editable': True},
+    {'name': '2030 Change (%)', 'id': '2030_change_percantage', 'editable': True},
+    {'name': '2040 Change (%)', 'id': '2040_change_percantage', 'editable': True},
+    {'name': '2050 Change (%)', 'id': '2050_change_percantage', 'editable': True},
+    {'name': 'show', 'id': 'show', 'editable': False},
+    {'name': 'editable', 'id': 'editable', 'editable': False},
 ]
+
 
 areas_columns = [
     {'id': 'category', 'name': 'Category'},
     {'id': 'capacity_2030', 'name': 'Capacity 2030'},
     {'id': 'capacity_2050', 'name': 'Capacity 2050'},
 ]
+
+
+def get_cell_css_selector(columns: List[Dict], column_id: str):
+    for index, column in enumerate(columns):
+        if column['id'] == column_id:
+            return f'td.dash-cell.column-{index}'
+    raise Exception(f'Could not find column with id "{column_id}"')
+
+
+def prices_editable_cells_css():
+    global prices_columns
+
+    css = []
+    for column in prices_columns:
+        if column['editable'] is True:
+            css.append({
+                'selector': get_cell_css_selector(columns=prices_columns, column_id=column['id']),
+                'rule': 'background-color: #fff7f7',
+            })
+            css.append({
+                'selector': get_cell_css_selector(columns=prices_columns, column_id=column['id']) + ':hover',
+                'rule': 'cursor: pointer; outline: 1px solid hotpink;',
+            })
+
+    return css
 
 
 areas_data = remap_areas_data(sheets_api.get_data_for_areas())
@@ -86,10 +113,6 @@ style_cell_conditional = [
         'textAlign': 'left'
     } for c in ['category', 'sub_category', 'source', 'unit']
 ]
-style_cell_conditional.append({
-    'if': {'column_editable': True},
-    'background_color': 'lightgray'
-})
 
 
 prices_layout = html.Div([
@@ -110,20 +133,18 @@ prices_layout = html.Div([
         columns=prices_columns,
         data=prices_data,
         editable=True,
+        sort_action="native",
+        sort_mode="multi",
         row_selectable='multi',
         hidden_columns=['show', 'editable'],
         style_cell_conditional=style_cell_conditional,
         style_as_list_view=True,
         css=[
             {
-                "selector": ".show-hide",
-                "rule": "display: none"
+                'selector': '.show-hide',
+                'rule': 'display: none'
             },
-            # {
-            #     "selector": ".input-active.focused.dash-cell-value",
-            #     "rule": "background-color: white"
-            # }
-        ]
+        ] + prices_editable_cells_css()
     ),
 ])
 
