@@ -1,7 +1,7 @@
 import dash_core_components as dcc
 import dash_html_components as html
 import plotly.graph_objects as go
-
+from components.stacked_power_graph import get_plotly_stacked_power_figures
 
 POWER_COLUMNS = [
     {'name': 'Station Name', 'id': 'station_name'},
@@ -71,35 +71,39 @@ CATEGORY_COLORS = {
     "Green": 'green',
 }
 
-def get_trace(item):
+def get_power_source_data(item):
     start_year = item.get("starting_year", YEARS[0])
     close_year = item.get("closing_year", YEARS[-1])
-    values = [item["annual_output"] if start_year == YEARS[0] else 0]
+
+    values = {}
+    values[YEARS[0]] = item['annual_output'] if start_year == YEARS[0] else 0
+
     for index, year in enumerate(YEARS[1:]):
         value = 0
         if year == start_year:
             value = item["annual_output"]
         elif start_year < year <= close_year:
-            value = values[index] * (1 - item.get("yearly_degradation", 0))
-        values.append(value)
+            value = values[YEARS[index]] * (1 - item.get("yearly_degradation", 0))
+        values[year] = value
 
-    return go.Scatter(
-        name=item["station_name"],
-        x=YEARS,
-        y=values,
-        hoveron='points+fills',
-        hoverinfo='x+y',
-        mode='lines',
-        line={"color": CATEGORY_COLORS[item["category"]]},
-        stackgroup='one'  # define stack group
-    )
-
+    return {
+        'name': item['station_name'],
+        'color': CATEGORY_COLORS[item["category"]],
+        'data': values
+    }
 
 
 def get_power_layout():
     fig = go.Figure()
+
+    power_sources = []
     for item in POWER_DATA:
-        fig.add_trace(get_trace(item))
+        power_sources.append(get_power_source_data(item))
+
+    traces = get_plotly_stacked_power_figures(YEARS, power_sources)
+
+    for t in traces:
+        fig.add_trace(t)
 
     return html.Div([
         dcc.Graph(figure=fig),

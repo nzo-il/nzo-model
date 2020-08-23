@@ -5,9 +5,9 @@ import plotly.graph_objects as go
 def get_plotly_stacked_power_figures(axis_notches, power_sources):
     out = []
     for power_source in power_sources:
-        out.push(
+        out.append(
             go.Scatter(
-                name=power_sources['station_name'],
+                name=power_source['name'],
                 x=axis_notches,
                 y=[power_source['data'][n] for n in axis_notches],
                 hoveron='points+fills',
