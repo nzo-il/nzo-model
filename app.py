@@ -128,29 +128,29 @@ prices_layout = html.Div([
 ])
 
 
-areas_layout = html.Div([
-    dash_table.DataTable(
-        id='production-areas-editable-table',
-        columns=areas_columns,
-        data=areas_data,
-        editable=True
-    ),
-    dbc.Row(
-        dbc.Col(
-            dbc.Container(
-                dbc.Col(html.Div(id="tab-content"), width={"size": 6, "offset": 3}, )),
-            className='bg-light'
-        ),
-        id='graph-content'
-    ),
-    dbc.Row([
-        dbc.Col(html.Span(''), width=9),
-        dbc.Col(dcc.Link([html.I(className='fa fa-download'), ' Export to PDF'], href='#'), width=2),
-    ], id='footer', className='bg-white', justify='end')
-], id='tab-body',
-    fluid=True,
-    className='bg-light p-0',
-)
+# areas_layout = html.Div([
+#     dash_table.DataTable(
+#         id='production-areas-editable-table',
+#         columns=areas_columns,
+#         data=areas_data,
+#         editable=True
+#     ),
+#     dbc.Row(
+#         dbc.Col(
+#             dbc.Container(
+#                 dbc.Col(html.Div(id="tab-content"), width={"size": 6, "offset": 3}, )),
+#             className='bg-light'
+#         ),
+#         id='graph-content'
+#     ),
+#     dbc.Row([
+#         dbc.Col(html.Span(''), width=9),
+#         dbc.Col(dcc.Link([html.I(className='fa fa-download'), ' Export to PDF'], href='#'), width=2),
+#     ], id='footer', className='bg-white', justify='end')
+# ], id='tab-body',
+#     fluid=True,
+#     className='bg-light p-0',
+# )
 
 
 areas_styled_dummy_layout = dbc.Container([
